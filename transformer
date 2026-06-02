@@ -1,0 +1,761 @@
+# Day 2: Attention & Transformers 
+
+
+# 1. Why Were Transformers Introduced?
+
+Before Transformers, Natural Language Processing (NLP) models primarily used:
+
+* Recurrent Neural Networks (RNNs)
+* Long Short-Term Memory Networks (LSTMs)
+* Gated Recurrent Units (GRUs)
+
+These models process text sequentially.
+
+Example:
+
+```
+I → love → learning → Transformers
+```
+
+Each word is processed one after another.
+
+### Problems with RNNs and LSTMs
+
+#### 1. Vanishing Gradient Problem
+
+As sequences become longer, information from earlier words gets lost.
+
+Example:
+
+```
+The dog that was playing in the garden near the house barked loudly.
+```
+
+To understand "barked", the model must remember "dog".
+
+RNNs struggle to preserve such long-range dependencies.
+
+#### 2. Sequential Processing
+
+RNNs process tokens one at a time.
+
+```
+Token1 → Token2 → Token3 → Token4
+```
+
+This prevents parallel computation and slows training.
+
+#### 3. Limited Context
+
+Long sentences often cause important information to fade away.
+
+---
+
+## Transformer Solution
+
+Instead of processing words sequentially, Transformers allow every word to directly interact with every other word.
+
+This is achieved through:
+
+### Attention Mechanism
+
+Attention enables a token to focus on relevant tokens regardless of their distance.
+
+Benefits:
+
+* Captures long-range dependencies
+* Parallel processing
+* Faster training
+* Better scalability
+
+---
+
+# 2. What is Attention?
+
+Attention is a mechanism that determines which words are most important when processing a particular word.
+
+Example:
+
+Sentence:
+
+```
+The cat sat on the mat.
+```
+
+While processing:
+
+```
+sat
+```
+
+The model asks:
+
+```
+Which words are relevant?
+```
+
+Possible attention weights:
+
+```
+The → 0.05
+cat → 0.70
+sat → 0.15
+on  → 0.05
+mat → 0.05
+```
+
+The model focuses mostly on:
+
+```
+cat
+```
+
+These values are called Attention Scores.
+
+---
+
+# 3. Query, Key, and Value (Q, K, V)
+
+The Attention mechanism uses three vectors:
+
+* Query (Q)
+* Key (K)
+* Value (V)
+
+Every token generates all three vectors.
+
+---
+
+## Query
+
+Represents:
+
+```
+What information am I looking for?
+```
+
+---
+
+## Key
+
+Represents:
+
+```
+What information do I contain?
+```
+
+---
+
+## Value
+
+Represents:
+
+```
+What information should I contribute?
+```
+
+---
+
+### Search Engine Analogy
+
+Imagine searching on Google.
+
+Your search text:
+
+```
+Machine Learning
+```
+
+is the Query.
+
+Every webpage title acts as a Key.
+
+The webpage content acts as the Value.
+
+The search engine compares:
+
+```
+Query ↔ Key
+```
+
+and returns the most relevant Values.
+
+Attention works similarly.
+
+---
+
+# 4. Attention Formula
+
+The core Transformer equation:
+
+Attention(Q,K,V)=Softmax((QKᵀ)/√dk)V
+
+Where:
+
+* Q = Query Matrix
+* K = Key Matrix
+* V = Value Matrix
+* dk = Key dimension
+
+---
+
+## Step 1: Similarity Score
+
+Compute:
+
+```
+QKᵀ
+```
+
+This measures similarity between queries and keys.
+
+---
+
+## Step 2: Scaling
+
+Divide by:
+
+```
+√dk
+```
+
+to prevent large values.
+
+Large values can cause Softmax saturation.
+
+---
+
+## Step 3: Softmax
+
+Convert raw scores into probabilities.
+
+Example:
+
+Raw Scores:
+
+```
+[4, 2, 1]
+```
+
+Softmax Output:
+
+```
+[0.84, 0.11, 0.05]
+```
+
+All values sum to:
+
+```
+1
+```
+
+---
+
+## Step 4: Weighted Sum
+
+Multiply probabilities with V.
+
+This generates a context-aware representation.
+
+---
+
+# 5. Why Divide by √dk?
+
+Without scaling:
+
+```
+QKᵀ
+```
+
+becomes very large for high-dimensional vectors.
+
+Example:
+
+```
+[120, 115, 130]
+```
+
+Softmax becomes:
+
+```
+[0.00, 0.00, 1.00]
+```
+
+The model becomes overly confident.
+
+Scaling stabilizes gradients and improves learning.
+
+---
+
+# 6. What is Self-Attention?
+
+Self-Attention means a token attends to other tokens in the same sequence.
+
+Example:
+
+```
+The animal didn't cross the road because it was tired.
+```
+
+Question:
+
+```
+What does "it" refer to?
+```
+
+Self-attention allows:
+
+```
+it → animal
+```
+
+even if many words separate them.
+
+---
+
+## Advantages
+
+* Understands context
+* Handles long dependencies
+* Fully parallelizable
+
+---
+
+# 7. Multi-Head Attention
+
+Instead of one attention mechanism, Transformers use multiple attention heads.
+
+Example:
+
+Head 1:
+
+```
+Grammar
+```
+
+Head 2:
+
+```
+Subject-Verb Relationships
+```
+
+Head 3:
+
+```
+Long-Distance Dependencies
+```
+
+Head 4:
+
+```
+Semantic Meaning
+```
+
+Each head learns different patterns.
+
+Outputs are combined to create richer representations.
+
+---
+
+## Why Multi-Head Attention?
+
+Single attention:
+
+```
+One perspective
+```
+
+Multi-head attention:
+
+```
+Multiple perspectives simultaneously
+```
+
+Result:
+
+Better understanding of language.
+
+---
+
+# 8. Transformer Architecture
+
+The Transformer was introduced in the paper:
+
+"Attention Is All You Need" (2017)
+
+Architecture:
+
+```
+Input
+ ↓
+Embedding
+ ↓
+Positional Encoding
+ ↓
+Multi-Head Attention
+ ↓
+Add & Normalize
+ ↓
+Feed Forward Network
+ ↓
+Add & Normalize
+ ↓
+Output
+```
+
+---
+
+## Components
+
+### Embeddings
+
+Convert token IDs into dense vectors.
+
+Example:
+
+```
+cat → [0.2, 0.7, 0.1]
+```
+
+---
+
+### Positional Encoding
+
+Transformers process all words simultaneously.
+
+Therefore, they need information about token order.
+
+Example:
+
+```
+I love AI
+```
+
+vs
+
+```
+AI love I
+```
+
+Positional Encoding adds sequence information.
+
+---
+
+### Multi-Head Attention
+
+Learns relationships among tokens.
+
+---
+
+### Feed Forward Network
+
+Processes token representations independently.
+
+---
+
+### Layer Normalization
+
+Stabilizes training.
+
+---
+
+# 9. Encoder vs Decoder
+
+## Encoder-Only Models
+
+Purpose:
+
+```
+Understanding Text
+```
+
+Examples:
+
+* BERT
+* RoBERTa
+
+Tasks:
+
+* Classification
+* Sentiment Analysis
+* Named Entity Recognition
+
+---
+
+## Decoder-Only Models
+
+Purpose:
+
+```
+Generating Text
+```
+
+Examples:
+
+* GPT
+* Llama
+
+Tasks:
+
+* Chatbots
+* Content Generation
+* Coding Assistants
+
+---
+
+## Encoder-Decoder Models
+
+Purpose:
+
+```
+Input → Output Transformation
+```
+
+Examples:
+
+* T5
+* BART
+
+Tasks:
+
+* Translation
+* Summarization
+
+---
+
+# 10. Why Are Transformers Parallelizable?
+
+RNN:
+
+```
+Word1 → Word2 → Word3 → Word4
+```
+
+Must process sequentially.
+
+Transformer:
+
+```
+Word1
+Word2
+Word3
+Word4
+```
+
+Processed simultaneously.
+
+Advantages:
+
+* Faster training
+* Better GPU utilization
+* Efficient scaling
+
+---
+
+# 11. Why Do LLMs Scale So Well?
+
+Transformers can:
+
+* Process huge datasets
+* Train on thousands of GPUs
+* Learn long-range dependencies
+* Use parallel computation
+
+As model size increases:
+
+* Better reasoning
+* Better language understanding
+* Emergent capabilities
+
+Examples:
+
+* GPT
+* Claude
+* Gemini
+* Llama
+
+---
+
+# 12. Simple Attention Implementation
+
+```python
+import numpy as np
+
+tokens = ["I", "love", "AI"]
+
+embeddings = np.array([
+    [1,0,1,0],
+    [0,1,0,1],
+    [1,1,0,0]
+])
+
+np.random.seed(42)
+
+Wq = np.random.rand(4,4)
+Wk = np.random.rand(4,4)
+Wv = np.random.rand(4,4)
+
+Q = embeddings @ Wq
+K = embeddings @ Wk
+V = embeddings @ Wv
+
+scores = Q @ K.T
+
+dk = K.shape[-1]
+
+scaled_scores = scores / np.sqrt(dk)
+
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return exp_x / exp_x.sum(axis=-1, keepdims=True)
+
+attention_weights = softmax(scaled_scores)
+
+context = attention_weights @ V
+
+print("Attention Scores:")
+print(scores)
+
+print("\nAttention Weights:")
+print(attention_weights)
+
+print("\nContext Vector:")
+print(context)
+```
+
+---
+
+# 13. Interpreting Attention Scores
+
+Example:
+
+```
+[[0.50 0.30 0.20]
+ [0.20 0.60 0.20]
+ [0.10 0.25 0.65]]
+```
+
+Interpretation:
+
+Token 1 attends mostly to itself.
+
+Token 2 attends mostly to itself.
+
+Token 3 attends strongly to itself.
+
+Higher values indicate stronger attention.
+
+---
+
+# Interview Questions and Answers
+
+### 1. Why were Transformers introduced?
+
+To solve long-range dependency issues and sequential processing limitations of RNNs/LSTMs.
+
+---
+
+### 2. What is Attention?
+
+A mechanism that determines the importance of other tokens when processing a token.
+
+---
+
+### 3. Explain Query, Key, and Value.
+
+* Query: What information am I looking for?
+* Key: What information do I contain?
+* Value: Information contributed to output.
+
+---
+
+### 4. What is Self-Attention?
+
+A mechanism where tokens attend to other tokens within the same sequence.
+
+---
+
+### 5. Why divide by √dk?
+
+To prevent large dot-product values and stabilize Softmax.
+
+---
+
+### 6. What is Softmax doing?
+
+Converts scores into probabilities that sum to 1.
+
+---
+
+### 7. What is Multi-Head Attention?
+
+Multiple attention mechanisms running in parallel to capture different relationships.
+
+---
+
+### 8. Difference between RNN and Transformer?
+
+RNN:
+
+* Sequential
+* Slow
+* Limited long-range memory
+
+Transformer:
+
+* Parallel
+* Fast
+* Better long-range understanding
+
+---
+
+### 9. Why are Transformers parallelizable?
+
+All tokens are processed simultaneously using matrix operations.
+
+---
+
+### 10. Explain the Attention Formula.
+
+Attention computes similarities between queries and keys, normalizes them using Softmax, and applies them to values.
+
+---
+
+### 11. What is Positional Encoding?
+
+A technique that provides word-order information to Transformers.
+
+---
+
+### 12. Why is the Transformer paper important?
+
+It introduced the Attention-only architecture that powers modern LLMs.
+
+---
+
+### 13. What are Encoder-Only and Decoder-Only Models?
+
+Encoder:
+
+* Understanding tasks
+
+Decoder:
+
+* Text generation tasks
+
+---
+
+### 14. Why do LLMs scale well with Transformers?
+
+Because Transformers support parallel training, large datasets, and efficient GPU computation.
+
+---
+
+# Key Takeaways
+
+* Attention is the foundation of Transformers.
+* Self-Attention allows tokens to understand context.
+* Multi-Head Attention learns multiple relationships simultaneously.
+* Transformers replaced RNNs due to efficiency and scalability.
+* Modern LLMs are built on Transformer architectures.
+* Understanding Attention is essential for understanding GPT, Llama, Gemini, and other large language models.
