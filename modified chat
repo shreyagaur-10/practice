@@ -1,0 +1,59 @@
+from ollama import chat
+import json
+
+# System prompt
+messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful AI tutor. Explain concepts clearly with examples."
+    }
+]
+
+print("🤖 Local AI Chatbot")
+print("Type 'exit' to quit\n")
+
+while True:
+    user_input = input("You: ")
+
+    if user_input.lower() == "exit":
+        break
+
+    # Add user message
+    messages.append(
+        {
+            "role": "user",
+            "content": user_input
+        }
+    )
+
+    print("\nBot: ", end="", flush=True)
+
+    assistant_reply = ""
+
+    # Stream response
+    stream = chat(
+        model="llama3.2",
+        messages=messages,
+        stream=True
+    )
+
+    for chunk in stream:
+        token = chunk["message"]["content"]
+        assistant_reply += token
+        print(token, end="", flush=True)
+
+    print("\n")
+
+    # Save assistant response
+    messages.append(
+        {
+            "role": "assistant",
+            "content": assistant_reply
+        }
+    )
+
+    # Save chat history after every conversation
+    with open("chat_history.json", "w") as f:
+        json.dump(messages, f, indent=4)
+
+print("Goodbye!")
