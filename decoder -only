@@ -1,0 +1,285 @@
+1️⃣ Decoder-Only Transformer Architecture
+What is a Transformer?
+
+A Transformer is a neural network that processes sequences using attention, not recurrence (no RNNs, no LSTMs).
+
+It consists of:
+
+Attention layers
+Feed-forward layers
+Residual connections
+Layer normalization
+Encoder vs Decoder vs Decoder-Only
+Architecture	Used for
+Encoder	Understanding (classification, embeddings)
+Decoder	Generation
+Encoder-Decoder	Translation, summarization
+Decoder-Only	Autoregressive text generation
+
+Modern LLMs use decoder-only architecture.
+
+Why Decoder-Only?
+
+Because language generation is naturally:
+
+“Given previous words, predict the next word.”
+
+This is called autoregressive modeling.
+
+Internal Structure of a Decoder Block
+
+Each decoder block contains:
+
+Masked Self-Attention
+Feed Forward Network
+Residual Connections
+Layer Normalization
+Masked Attention (VERY IMPORTANT)
+
+When predicting token t, the model must not see tokens t+1, t+2...
+
+Example sentence:
+
+"I am learning transformers"
+
+When predicting "learning", model can attend to:
+
+"I", "am"
+
+❌ It cannot attend to "transformers"
+
+This is enforced using a causal mask.
+
+Why this matters
+Prevents cheating during training
+Enables left-to-right generation
+Makes streaming text generation possible
+
+This architecture is used by GPT-style models
+
+2️⃣ Pretraining (Foundation Phase)
+What is Pretraining?
+
+Pretraining is training the model on massive unlabeled text data using next-token prediction.
+
+There are:
+
+No instructions
+No humans guiding answers
+No alignment goals
+
+Just raw text
+
+Training Objective (Mathematically)
+
+The model learns:
+
+P(token_n | token_1, token_2, ..., token_n-1)
+
+Which means:
+
+Predict the next token given all previous tokens.
+
+Example
+
+Training data:
+
+"The sun rises in the east"
+
+Training pairs:
+
+"The" → "sun"
+"The sun" → "rises"
+"The sun rises" → "in"
+...
+
+This happens billions of times.
+
+What the model learns during pretraining
+
+Without being explicitly taught, the model learns:
+
+Grammar
+Syntax
+Semantic meaning
+World facts
+Cause–effect patterns
+Reasoning structures
+
+Pretraining = learning language structure + world knowledge
+
+What it does NOT learn
+
+❌ How to follow instructions
+❌ How to be helpful
+❌ What humans prefer
+
+That comes later.
+
+3️⃣ Instruction Tuning (Turning Model into Assistant)
+Problem with Pretrained Models
+
+A pretrained model behaves like:
+
+“Continue the text in a statistically likely way”
+
+Example:
+
+User: Explain gravity
+Model: Gravity is a force that was discovered...
+
+This is not guaranteed to:
+
+Be correct
+Be concise
+Follow user intent
+What is Instruction Tuning?
+
+Instruction tuning fine-tunes the pretrained model on datasets like:
+
+Instruction → Ideal Answer
+
+Example:
+
+Instruction: Explain gravity simply
+Answer: Gravity is the force that pulls objects toward each other...
+What changes after instruction tuning?
+Before	After
+Text completer	Assistant
+Random continuation	Intent-aware
+No formatting	Structured answers
+No task understanding	Task following
+
+Instruction tuning teaches the model how to respond, not new facts.
+
+4️⃣ RLHF (Reinforcement Learning from Human Feedback)
+Why Instruction Tuning Is Still Not Enough
+
+Even after instruction tuning, models can:
+
+Hallucinate
+Be overconfident
+Answer unsafe questions
+Sound rude or dismissive
+
+We need human alignment.
+
+What is RLHF?
+
+RLHF aligns model outputs with human preferences.
+
+Humans judge:
+
+Which answer is better
+Which is safer
+Which is clearer
+RLHF Pipeline (Conceptual)
+Step 1: Generate Multiple Answers
+
+Model generates several responses to the same prompt.
+
+Step 2: Human Ranking
+
+Humans rank answers:
+
+Best → Good → Bad → Dangerous
+Step 3: Reward Model Training
+
+A reward model learns:
+
+Which answers humans prefer
+
+The main model is then optimized to maximize reward.
+
+What RLHF Teaches
+
+RLHF teaches:
+
+Politeness
+Honesty
+Safety boundaries
+Helpfulness
+Uncertainty handling
+
+RLHF does NOT teach facts
+RLHF teaches behavior and values
+
+5️⃣ GPT vs BERT (Deep Comparison)
+Core Difference
+Feature	GPT	BERT
+Architecture	Decoder-only	Encoder-only
+Attention	Masked (causal)	Bidirectional
+Training	Next-token prediction	Masked language modeling
+Strength	Generation	Understanding
+Attention Difference (Key Insight)
+GPT Attention
+I → love → AI → ?
+
+Each token sees only previous tokens.
+
+BERT Attention
+I ←→ love ←→ AI
+
+Every token sees all others.
+
+Why BERT Is Bad at Generation
+
+Because:
+
+It sees future tokens during training
+It was never trained to predict next token sequentially
+
+Therefore:
+❌ BERT cannot naturally generate text
+
+This is why:
+
+GPT → Chatbots
+BERT → Search, classification, embeddings
+6️⃣ Why Fine-Tuning Isn’t Default (CRITICAL INTERVIEW TOPIC)
+What is Fine-Tuning?
+
+Updating all model weights on task-specific data.
+
+Why NOT fine-tune by default?
+1️⃣ Catastrophic Forgetting
+
+Model forgets general knowledge when trained on narrow data.
+
+2️⃣ Extremely Expensive
+
+Large models require:
+
+Huge GPUs
+Long training times
+Massive cost
+3️⃣ Overfitting Risk
+
+Model becomes too specialized.
+
+4️⃣ Maintenance Problem
+
+Every task → new model version.
+
+What Is Used Instead?
+Method	Why
+Prompt engineering	Cheap, flexible
+RAG	Adds fresh knowledge
+LoRA / PEFT	Lightweight tuning
+System prompts	Behavior control
+
+Fine-tuning is used only when behavior must permanently change
+
+7️⃣ Full Training Pipeline (Big Picture)
+Raw Text
+   ↓
+Pretraining (Language Learning)
+   ↓
+Instruction Tuning (Task Following)
+   ↓
+RLHF (Human Alignment)
+   ↓
+Deployed Assistant
+
+
+“Modern LLMs use decoder-only Transformers trained via autoregressive pretraining to learn language structure. Instruction tuning aligns them to follow user intent, while RLHF aligns responses with human preferences and safety. Full fine-tuning is avoided by default due to cost, catastrophic forgetting, and scalability issues.”
