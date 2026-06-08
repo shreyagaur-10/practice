@@ -1,0 +1,159 @@
+# 📅 Day 6 – Prompt Debugging
+
+Prompt debugging focuses on **controlling model reasoning, enforcing constraints, and producing reliable machine-readable output**.  
+This day is about treating prompts like **code contracts**.
+
+---
+
+## 🔍 Learn
+
+### 1️⃣ Chain-of-Thought (CoT)
+
+**Chain-of-thought** helps models solve complex problems by reasoning step-by-step internally.
+
+> ⚠️ Best practice:  
+> Do **not expose** chain-of-thought to users.  
+> Ask the model to reason internally and return only the final answer.
+
+#### Why it matters
+- Improves accuracy
+- Reduces hallucinations
+- Stabilizes outputs for logic-heavy tasks
+
+---
+
+### 2️⃣ Constraints
+
+Constraints are **explicit rules** that limit model behavior.
+
+Common constraints:
+- Output format (JSON only)
+- No explanations
+- Fixed keys
+- Allowed values only
+- Length limits
+
+---
+
+### 3️⃣ Output Schemas
+
+Schemas define the **exact structure** the model must follow.
+
+#### Example Schema
+```json
+{
+  "answer": "string",
+  "confidence": "number",
+  "source": "string | null"
+}
+
+
+
+## 🛠 Build
+
+---
+
+## 4️⃣ Force Strict JSON Output
+
+In production systems, LLM output must be **machine-readable**.  
+This means **no explanations, no markdown, no extra text** — only valid JSON.
+
+### 🎯 Goal
+Ensure the model behaves like an **API**, not a chatbot.
+
+---
+
+### 📌 Strategy
+- Explicitly define rules
+- Provide a strict schema
+- Specify fallback values (`null`)
+- Reject any non-JSON output
+
+---
+
+4️⃣ Force Strict JSON Output
+🎯 Goal
+Ensure the model behaves like a JSON API, not a chatbot.
+📌 Strategy
+Explicit rules
+Strict schema
+No markdown or explanations
+Reject non-JSON output
+You are a JSON API.
+
+Rules:
+1. Output must be valid JSON
+2. Do not include any text outside JSON
+3. Follow the schema exactly
+4. Use null for missing or unknown values
+
+Schema:
+{
+  "task": "string",
+  "status": "success | failure",
+  "result": "string | null"
+}
+
+Task:
+Summarize the sentence:
+"Prompt debugging improves reliability."
+✅ Expected Output
+JSON
+{
+  "task": "Summarization",
+  "status": "success",
+  "result": "Prompt debugging increases system reliability."
+}
+5️⃣ Validate Output Programmatically
+LLM output must be treated as untrusted input.
+🔁 Validation Workflow
+
+LLM Output
+   ↓
+JSON Parsing
+   ↓
+Schema Validation
+   ├─ ❌ Invalid → Retry / Repair
+   └─ ✅ Valid → Use Safely
+🐍 Python Validation (Beginner-Friendly)
+Python
+import json
+
+def validate_llm_output(response):
+    try:
+        data = json.loads(response)
+
+        # Required fields
+        if "task" not in data:
+            return False
+        if "status" not in data:
+            return False
+        if "result" not in data:
+            return False
+
+        # Allowed values
+        if data["status"] not in ["success", "failure"]:
+            return False
+
+        # Type checking
+        if data["result"] is not None and not isinstance(data["result"], str):
+            return False
+
+        return True
+
+    except json.JSONDecodeError:
+        return False
+▶️ Usage Example
+Python
+response = '''
+{
+  "task": "Summarization",
+  "status": "success",
+  "result": "Prompt debugging improves reliability."
+}
+'''
+
+if validate_llm_output(response):
+    print("✅ Valid output – safe to use")
+else:
+    print("❌ Invalid output – retry")
