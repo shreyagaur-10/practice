@@ -1,0 +1,208 @@
+
+
+What is RAG?
+
+Retrieval-Augmented Generation (RAG) is a two-step process:
+
+1. Retrieve relevant information from an external knowledge source
+
+
+2. Generate an answer using an LLM grounded in that information
+
+
+
+In short:
+RAG = Retrieve → Generate
+
+
+---
+
+Why RAG is Needed
+
+Large Language Models:
+
+Are good at reasoning but weak at factual recall
+
+Have static training data
+
+Can hallucinate confidently
+
+Are expensive to fine-tune
+
+
+RAG solves these problems by:
+
+Keeping knowledge outside the model
+
+Fetching correct information before generation
+
+Allowing instant updates without retraining
+
+
+
+---
+
+RAG Architecture
+
+RAG consists of two pipelines.
+
+
+---
+
+Offline Pipeline (Knowledge Preparation)
+
+This pipeline runs once or periodically.
+
+Flow:
+Raw Documents
+→ Chunking
+→ Embedding Generation
+→ Vector Store
+
+Explanation:
+
+Documents are split into small semantic chunks (200–500 tokens)
+
+Each chunk is converted into a numerical embedding
+
+Embeddings are stored in a vector database for fast similarity search
+
+
+
+---
+
+Online Pipeline (Query Answering)
+
+This pipeline runs for every user query.
+
+Flow:
+User Query
+→ Query Embedding
+→ Similarity Search (Top-K)
+→ Context Construction
+→ LLM (Answer Generation)
+
+Explanation:
+
+The user query is converted into an embedding using the same embedding model
+
+The system retrieves the most relevant chunks using similarity search
+
+Retrieved chunks are injected into the prompt as context
+
+The LLM generates a grounded answer
+
+
+
+---
+
+End-to-End Flow
+
+1. Documents are embedded and stored
+
+
+2. User submits a query
+
+
+3. Query is embedded
+
+
+4. Top-K similar chunks are retrieved
+
+
+5. Retrieved chunks are added as context
+
+
+6. LLM generates the final answer
+
+
+
+
+---
+
+Common RAG Failure Modes
+
+Bad chunking
+Chunks are too small or too large, losing meaning
+
+Poor embeddings
+Semantic meaning is not captured well
+
+Retrieval miss
+Relevant information exists but is not retrieved
+
+Context overload
+Too many chunks confuse the LLM
+
+Hallucination
+Weak prompt grounding causes guessing
+
+
+---
+
+Why RAG is Better Than Fine-Tuning
+
+Knowledge updates
+RAG: Instant
+Fine-tuning: Requires retraining
+
+Cost
+RAG: Low
+Fine-tuning: High
+
+Scalability
+RAG: High
+Fine-tuning: Limited
+
+Source grounding
+RAG: Yes
+Fine-tuning: No
+
+Hallucination control
+RAG: Strong
+Fine-tuning: Weak
+
+
+---
+
+Key Insight
+
+LLMs should reason, not memorize.
+
+RAG separates responsibilities:
+
+Memory → Vector database
+
+Attention → Retriever
+
+Reasoning → LLM
+
+
+This separation makes RAG scalable and reliable.
+
+
+---
+
+Minimal Conceptual Implementation
+
+1. Embed documents
+
+
+2. Embed user query
+
+
+3. Retrieve top-K similar chunks
+
+
+4. Build prompt using retrieved context
+
+
+5. Generate answer using LLM
+
+
+
+Retrieval-Augmented Generation is the industry-standard approach for building reliable AI systems such as chatbots, search engines, and knowledge assistants.
+
+Understanding RAG is essential for building production-ready AI applications.
+
+
