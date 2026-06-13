@@ -121,7 +121,7 @@ Used in GPT-style models
 Aspect	Pre-Norm	Post-Norm
 Training stability	✅ High	❌ Low
 Deep scaling	✅ Yes	❌ No
-Used today	✅	❌
+
 8️⃣ How Attention Failure Causes Hallucination
 What Is Hallucination?
 
