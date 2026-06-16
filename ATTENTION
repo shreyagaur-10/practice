@@ -113,7 +113,7 @@ Gradient issues
 🟢 Pre-Norm (Modern Transformers)
 x → LayerNorm → Attention → Add
 
-✅ Benefits:
+Benefits:
 
 Stable gradients
 Faster convergence
